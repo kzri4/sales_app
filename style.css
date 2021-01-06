@@ -1,0 +1,36 @@
+@charset "UTF-8";
+h1{
+    text-align: center;
+}
+
+.form{
+    display: flex;
+}
+
+.year{
+    margin: auto;
+}
+
+.branch{
+    margin: auto;
+}
+
+.staff{
+    margin: auto;
+}
+.sub1{
+    text-align: center;
+    margin-top: 20px;
+}
+
+form{
+    border: solid 1px #333 ;
+}
+
+table{
+    margin-top: 50px;
+}
+
+.cal{
+    margin-left: 60%;
+}
