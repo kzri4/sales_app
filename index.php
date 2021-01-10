@@ -5,27 +5,26 @@ require_once('functions.php');
 
 $dbh = connectDb();
 
-$sql = 'SELECT * FROM sales';
+$sql = 'SELECT
+        sales.year,sales.month,branches.name,staffs.name,sales.sale
+        FROM 
+        sales
+        inner JOIN staffs
+        ON sales.staff_id = staffs.id
+        inner JOIN branches
+        ON staffs.branch_id = branches.id' ;
+
 $stmt = $dbh->prepare($sql);
 $stmt->execute();
 $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$sql = 'SELECT staffs.name,branches.name
-        FROM staffs
-        INNER JOIN branches
-        ON staffs.branch_id = branches.id' ;
-$stmt = $dbh->prepare($sql);
-$stmt->execute();
-$branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 $sum = 0;
 foreach ($sales as $sale){
 $sum += $sale['sale'];
+
 }
 
-foreach ($branches as $branch){
-}
-
+/*
 if (isset($_GET['year'])){
     $sql = 'SELECT year FROM sales';
     $stmt = $dbh->prepare($sql);
@@ -41,6 +40,7 @@ if (isset($_GET['staff'])){
     $stmt = $dbh->prepare($sql);
     $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+*/
 
 ?>
 
@@ -104,12 +104,11 @@ if (isset($_GET['staff'])){
         <th>従業員</th>
         <th>売上</th>
     </tr>
-
     <tr>
         <td width="300"><?= h($sale['year']) ?></td>
         <td width="300"><?= h($sale['month']) ?></td>
-        <td width="300"><?= h($branch['name']) ?></td>
-        <td width="300"><?= h($staff['name']) ?></td>
+        <td width="300"><?= h($sale['name']) ?></td>
+        <td width="300"><?= h($sale['name']) ?></td>
         <td width="300"><?= h($sale['sale']) ?></td>
     </tr>
 </table>
@@ -117,5 +116,4 @@ if (isset($_GET['staff'])){
 <h1 class="cal">合計:<?= $sum ?></h1>
 
 </body>
-
 </html>
