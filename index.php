@@ -6,17 +6,53 @@ require_once('functions.php');
 $dbh = connectDb();
 
 $sql = 'SELECT
+        sales.sale,
         sales.year,
         sales.month,
-        branches.name as branch_name,
         staffs.name as staff_name,
-        sales.sale
+        branches.name as branch_name
         FROM 
         sales
-        inner JOIN staffs
+        INNER JOIN staffs
         ON sales.staff_id = staffs.id
-        inner JOIN branches
+        INNER JOIN branches
         ON staffs.branch_id = branches.id';
+$stmt = $dbh->prepare($sql);
+$stmt->execute();
+$sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$sql ='SELECT * FROM staffs';
+$stmt = $dbh->prepare($sql);
+$stmt->execute();
+$staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$sql ='SELECT * FROM branches';
+$stmt = $dbh->prepare($sql);
+$stmt->execute();
+$branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$sum = 0;
+foreach ($sales as $sale){
+$sum += $sale['sale'];
+}
+
+
+if (isset($_GET['year'])&&($_GET['branch'])&&($_GET['staff'])){
+    $sql = 'SELECT
+        sales.sale,
+        sales.year,
+        sales.month,
+        staffs.name as staff_name,
+        branches.name as branch_name
+        FROM
+        sales
+        INNER JOIN staffs
+        ON sales.staff_id = staffs.id
+        INNER JOIN branches
+        ON staffs.branch_id = branches.id
+        WHERE sales.year = $_GET['year']
+            AND branches.name = "$_GET['branch']"
+            AND staffs.name = "$_GET['staff']"' ;
 
 $stmt = $dbh->prepare($sql);
 $stmt->execute();
@@ -25,27 +61,8 @@ $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $sum = 0;
 foreach ($sales as $sale){
 $sum += $sale['sale'];
-}
 
-if (isset($_GET['year'])&&($_GET['branch'])&&($_GET['staff'])){
-    $sql = 'SELECT
-        sales.year,
-        sales.month,
-        branches.name as branch_name,
-        staffs.name as staff_name,
-        sales.sale
-        FROM 
-        sales
-        inner JOIN staffs
-        ON sales.staff_id = staffs.id
-        inner JOIN branches
-        ON staffs.branch_id = branches.id 
-        WHERE year = 1 AND branch_name = 2 AND staff_name =3';
-    
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute();
 }
-
 
 ?>
 
@@ -65,25 +82,16 @@ if (isset($_GET['year'])&&($_GET['branch'])&&($_GET['staff'])){
     <div class="form">
         <div class="year">
             <lablel>年</lablel> 
-            <select name="year"> 
-                <?foreach ($sales as $sale):?>
-                <option value = 1 
-                <?php echo array_key_exists('year', $_GET) 
-                && $_GET['year'] == '1'?'selected':'';?>>
-                <?= h($sale['year']) ?>
-                </option>
-                <?endforeach;?>
-            </select>
+            <input type = "number" name = "year" value="<?php if (isset($_GET['year'])){echo $_GET['year'];} ?>"> 
         </div>
 
         <div class="branch">
             <lablel>支店</lablel>
-            <select name="branch"> 
-                <?foreach ($sales as $sale):?>
-                <option value = 2
-                <?php echo array_key_exists('branch', $_GET) 
-                && $_GET['branch'] == '2'?'selected':'';?>>
-                <?= h($sale['branch_name']) ?>
+            <select name = "branch"> 
+                <?foreach ($branches as $branch):?>
+                <option value = "<?= h($branch['id']) ?>"
+                    <?php if ($_GET['branch'] == $branch['id']){echo "selected";}?>>
+                    <?= h($branch['name']) ?>
                 </option>
                 <?endforeach;?>
             </select>
@@ -92,15 +100,13 @@ if (isset($_GET['year'])&&($_GET['branch'])&&($_GET['staff'])){
         <div class="staff">
             <lablel>従業員</lablel>
             <select name="staff"> 
-                <?foreach ($sales as $sale):?>
-                <option value = 3
-                <?php echo array_key_exists('staff', $_GET) 
-                && $_GET['staff'] == '3'?'selected':'';?>>
-                <?= h($sale['staff_name']) ?>
-            </option>
+                <?foreach ($staffs as $staff):?>
+                <option value ="<?= h($staff['id']) ?>"
+                    <?php if ($_GET['staff'] == $staff['id']){echo "selected";}?>>
+                    <?= h($staff['name']) ?>
+                </option>
                 <?endforeach;?>
-
-        </select><br>
+            </select><br>
         </div>
     </div>
 
