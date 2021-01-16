@@ -5,18 +5,21 @@ require_once('functions.php');
 
 $dbh = connectDb();
 
-$sql = 'SELECT
-        sales.sale,
+
+$sql =
+    'SELECT
         sales.year,
         sales.month,
         staffs.name as staff_name,
-        branches.name as branch_name
-        FROM 
+        branches.name as branch_name,
+        sales.sale
+    FROM 
         sales
-        INNER JOIN staffs
+    INNER JOIN staffs
         ON sales.staff_id = staffs.id
-        INNER JOIN branches
+    INNER JOIN branches
         ON staffs.branch_id = branches.id';
+
 $stmt = $dbh->prepare($sql);
 $stmt->execute();
 $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -36,33 +39,52 @@ foreach ($sales as $sale){
 $sum += $sale['sale'];
 }
 
+if ((isset($_GET['year'])) && (isset($_GET['branch'])) && (isset($_GET['staff']))){
 
-if (isset($_GET['year'])&&($_GET['branch'])&&($_GET['staff'])){
-    $sql = 'SELECT
-        sales.sale,
-        sales.year,
-        sales.month,
-        staffs.name as staff_name,
-        branches.name as branch_name
+    $sql = 
+        'SELECT
+            sales.year,
+            sales.month,
+            staffs.name as staff_name,
+            branches.name as branch_name,
+            sales.sale
         FROM
-        sales
+            sales
         INNER JOIN staffs
-        ON sales.staff_id = staffs.id
+            ON sales.staff_id = staffs.id
         INNER JOIN branches
-        ON staffs.branch_id = branches.id
-        WHERE sales.year = $_GET['year']
-            AND branches.name = "$_GET['branch']"
-            AND staffs.name = "$_GET['staff']"' ;
+            ON staffs.branch_id = branches.id
+        WHERE sales.year = :year
+        WHERE branches.id = :branch_id
+        WHERE staffs.id = :staff_id';
 
-$stmt = $dbh->prepare($sql);
-$stmt->execute();
-$sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $dbh->prepare($sql);
+    $stmt->bindParam(':year', $_GET['year'], PDO::PARAM_INT);
+    $stmt->bindParam(':branch_id', $_GET['branch'], PDO::PARAM_INT);
+    $stmt->bindParam(':staff_id', $_GET['staff'], PDO::PARAM_INT);
+    $stmt->execute();
+    $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$sum = 0;
-foreach ($sales as $sale){
-$sum += $sale['sale'];
+    $sum = 0;
+    foreach ($sales as $sale){
+    $sum += $sale['sale'];
+    }
+}
+
+
+/*
+if (isset($_GET['year'])){
+
+    $sql = 'SELECT year FROM sales WHERE year = :year';
+    $stmt = $dbh->prepare($sql);
+    $stmt->bindParam(':year', $_GET['year'], PDO::PARAM_INT);
+    $stmt->execute();
+    $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($sales as $sale){
 
 }
+}
+*/
 
 ?>
 
@@ -99,7 +121,7 @@ $sum += $sale['sale'];
 
         <div class="staff">
             <lablel>従業員</lablel>
-            <select name="staff"> 
+            <select name = "staff"> 
                 <?foreach ($staffs as $staff):?>
                 <option value ="<?= h($staff['id']) ?>"
                     <?php if ($_GET['staff'] == $staff['id']){echo "selected";}?>>
@@ -123,6 +145,7 @@ $sum += $sale['sale'];
         <th>従業員</th>
         <th>売上</th>
     </tr>
+
     <?foreach ($sales as $sale):?>
     <tr>
         <td width="300"><?= h($sale['year']) ?></td>
@@ -132,6 +155,7 @@ $sum += $sale['sale'];
         <td width="300"><?= h($sale['sale']) ?></td>
     </tr>
     <?endforeach;?>
+    
     
 </table>
 
