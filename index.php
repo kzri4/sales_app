@@ -5,7 +5,6 @@ require_once('functions.php');
 
 $dbh = connectDb();
 
-
 $sql =
     'SELECT
         sales.year,
@@ -44,8 +43,85 @@ $branch = $_GET['branch'];
 $staff = $_GET['staff'];
 
 
-if ((isset($year)) && (isset($branch)) && (isset($staff))){
+if (isset($year)){
+    $sql = 
+        'SELECT
+            sales.year,
+            sales.month,
+            staffs.name as staff_name,
+            branches.name as branch_name,
+            sales.sale
+        FROM
+            sales
+        INNER JOIN staffs
+            ON sales.staff_id = staffs.id
+        INNER JOIN branches
+            ON staffs.branch_id = branches.id
+        WHERE sales.year = :year';
+    
+    $stmt = $dbh->prepare($sql);
+    $stmt->bindParam(':year', $year , PDO::PARAM_INT);
+    $stmt->execute();
+    $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $sum = 0;
+    foreach ($sales as $sale){
+        $sum += $sale['sale'];
+    }
+    
+}else if(isset($branch)){
+    $sql = 
+        'SELECT
+            sales.year,
+            sales.month,
+            staffs.name as staff_name,
+            branches.name as branch_name,
+            sales.sale
+        FROM
+            sales
+        INNER JOIN staffs
+            ON sales.staff_id = staffs.id
+        INNER JOIN branches
+            ON staffs.branch_id = branches.id
+        WHERE branches.id = :branch_id';
+    
+    $stmt = $dbh->prepare($sql);
+    $stmt->bindParam(':branch_id', $branch , PDO::PARAM_INT);
+    $stmt->execute();
+    $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $sum = 0;
+    foreach ($sales as $sale){
+        $sum += $sale['sale'];
+    }
 
+}else if(isset($staff)){
+    $sql = 
+        'SELECT
+            sales.year,
+            sales.month,
+            staffs.name as staff_name,
+            branches.name as branch_name,
+            sales.sale
+        FROM
+            sales
+        INNER JOIN staffs
+            ON sales.staff_id = staffs.id
+        INNER JOIN branches
+            ON staffs.branch_id = branches.id
+        WHERE staffs.id = :staff_id';
+    
+    $stmt = $dbh->prepare($sql);
+    $stmt->bindParam(':staff_id', $staff, PDO::PARAM_INT);
+    $stmt->execute();
+    $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $sum = 0;
+    foreach ($sales as $sale){
+        $sum += $sale['sale'];
+    }
+
+}else if ((isset($year))&&(isset($branch))){
     $sql = 
         'SELECT
             sales.year,
@@ -60,36 +136,75 @@ if ((isset($year)) && (isset($branch)) && (isset($staff))){
         INNER JOIN branches
             ON staffs.branch_id = branches.id
         WHERE sales.year = :year
-        WHERE branches.id = :branch_id
-        WHERE staffs.id = :staff_id';
-
+        AND staffs.id = :staff_id';
+    
     $stmt = $dbh->prepare($sql);
-    $stmt->bindParam(':year', $_GET['year'], PDO::PARAM_INT);
-    $stmt->bindParam(':branch_id', $_GET['branch'], PDO::PARAM_INT);
-    $stmt->bindParam(':staff_id', $_GET['staff'], PDO::PARAM_INT);
+    $stmt->bindParam(':year', $year, PDO::PARAM_INT);
+    $stmt->bindParam(':branch_id', $branch, PDO::PARAM_INT); 
     $stmt->execute();
     $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+    
     $sum = 0;
     foreach ($sales as $sale){
-    $sum += $sale['sale'];
+        $sum += $sale['sale'];
     }
-}
 
-
-/*
-if (isset($_GET['year'])){
-
-    $sql = 'SELECT year FROM sales WHERE year = :year';
+}else if ((isset($year))&&(isset($staff))){
+    $sql = 
+        'SELECT
+            sales.year,
+            sales.month,
+            staffs.name as staff_name,
+            branches.name as branch_name,
+            sales.sale
+        FROM
+            sales
+        INNER JOIN staffs
+            ON sales.staff_id = staffs.id
+        INNER JOIN branches
+            ON staffs.branch_id = branches.id
+        WHERE sales.year = :year
+        AND staffs.id = :staff_id';
+    
     $stmt = $dbh->prepare($sql);
-    $stmt->bindParam(':year', $_GET['year'], PDO::PARAM_INT);
+    $stmt->bindParam(':year', $year, PDO::PARAM_INT);
+    $stmt->bindParam(':staff_id', $staff, PDO::PARAM_INT);
     $stmt->execute();
     $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $sum = 0;
     foreach ($sales as $sale){
+        $sum += $sale['sale'];
+    }
 
+}else if ((isset($branch))&&(isset($staff))){
+    $sql = 
+        'SELECT
+            sales.year,
+            sales.month,
+            staffs.name as staff_name,
+            branches.name as branch_name,
+            sales.sale
+        FROM
+            sales
+        INNER JOIN staffs
+            ON sales.staff_id = staffs.id
+        INNER JOIN branches
+            ON staffs.branch_id = branches.id
+        WHERE sales.year = :year
+        AND staffs.id = :staff_id';
+    
+    $stmt = $dbh->prepare($sql);
+    $stmt->bindParam(':branch_id', $branch, PDO::PARAM_INT); 
+    $stmt->bindParam(':staff_id', $staff, PDO::PARAM_INT);
+    $stmt->execute();
+    $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $sum = 0;
+    foreach ($sales as $sale){
+        $sum += $sale['sale'];
+    }
 }
-}
-*/
 
 ?>
 
@@ -114,11 +229,11 @@ if (isset($_GET['year'])){
 
         <div class="branch">
             <lablel>支店</lablel>
-            <select name = "branch"> 
+            <select name = "branch">
+                <option value="0"> </option>
                 <?foreach ($branches as $branch):?>
                 <option value = "<?= h($branch['id']) ?>"
-                    <?php if ($_GET['branch'] == $branch['id']){echo "selected";}?>>
-                    <?= h($branch['name']) ?>
+                    <?php if ($_GET['branch'] == $branch['id']){echo "selected";}?>><?= h($branch['name']) ?>
                 </option>
                 <?endforeach;?>
             </select>
@@ -127,10 +242,10 @@ if (isset($_GET['year'])){
         <div class="staff">
             <lablel>従業員</lablel>
             <select name = "staff"> 
+                <option value="0"> </option>
                 <?foreach ($staffs as $staff):?>
                 <option value ="<?= h($staff['id']) ?>"
-                    <?php if ($_GET['staff'] == $staff['id']){echo "selected";}?>>
-                    <?= h($staff['name']) ?>
+                    <?php if ($_GET['staff'] == $staff['id']){echo "selected";}?>><?= h($staff['name']) ?>
                 </option>
                 <?endforeach;?>
             </select><br>
