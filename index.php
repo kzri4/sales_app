@@ -39,7 +39,12 @@ foreach ($sales as $sale){
 $sum += $sale['sale'];
 }
 
-if ((isset($_GET['year'])) && (isset($_GET['branch'])) && (isset($_GET['staff']))){
+$year = $_GET['year'];
+$branch = $_GET['branch'];
+$staff = $_GET['staff'];
+
+
+if ((isset($year)) && (isset($branch)) && (isset($staff))){
 
     $sql = 
         'SELECT
