@@ -9,7 +9,6 @@ $year = $_GET['year'];
 $branch = $_GET['branch'];
 $staff = $_GET['staff'];
 
-
 $sql = <<< EOM
     SELECT
         s.year,
@@ -23,11 +22,9 @@ $sql = <<< EOM
         ON s.staff_id = st.id
     INNER JOIN branches b
         ON st.branch_id = b.id
-
 EOM;
 
 $where_sql = '';
-
 
 if ($year) {
     $where_sql .= 's.year = :year';
@@ -53,27 +50,26 @@ if ($where_sql) {
 
 $sql .= ' ' . $where_sql;
 
-
-$sql .= ' ORDER BY 
+$sql .= <<< EOM
+        ORDER BY 
             s.year ASC,
             s.month ASC,
             b.name ASC,
-            st.name ASC';
+            st.name ASC
+EOM;
 
 $stmt = $dbh->prepare($sql);
-if ($year){
+if ($year) {
     $stmt->bindParam(':year', $year , PDO::PARAM_INT);
 }
-if ($branch){
+if ($branch) {
     $stmt->bindParam(':branch_id', $branch , PDO::PARAM_INT);
 }
-if ($staff){
+if ($staff) {
     $stmt->bindParam(':staff_id', $staff , PDO::PARAM_INT);
 }
 $stmt->execute();
 $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-
 
 $sql ='SELECT * FROM staffs';
 $stmt = $dbh->prepare($sql);
@@ -86,7 +82,7 @@ $stmt->execute();
 $branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $sum = 0;
-foreach ($sales as $sale){
+foreach ($sales as $sale) {
 $sum += $sale['sale'];
 }
 
@@ -150,6 +146,7 @@ $sum += $sale['sale'];
         <th>売上</th>
     </tr>
 
+    <?$sum = 0;?>
     <?foreach ($sales as $sale):?>
     <tr>
         <td width="300"><?= h($sale['year']) ?></td>
@@ -158,9 +155,8 @@ $sum += $sale['sale'];
         <td width="300"><?= h($sale['staff_name']) ?></td>
         <td width="300"><?= h($sale['sale']) ?></td>
     </tr>
+    <?$sum += $sale['sale']?>
     <?endforeach;?>
-    
-    
 </table>
 
 <h1 class="cal">合計:<?= number_format($sum) ?>万円</h1>
