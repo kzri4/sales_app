@@ -13,10 +13,10 @@ $sql = <<< EOM
         branches.name as branch_name,
         sales.sale
     FROM
-        sales 
-    INNER JOIN staffs 
+        sales s
+    INNER JOIN staffs st 
         ON sales.staff_id = staffs.id
-    INNER JOIN branches 
+    INNER JOIN branches b
         ON staffs.branch_id = branches.id
 EOM;
 
