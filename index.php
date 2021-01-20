@@ -5,46 +5,47 @@ require_once('functions.php');
 
 $dbh = connectDb();
 
-$sql = <<< EOM
-    SELECT
-        sales.year,
-        sales.month,
-        staffs.name as staff_name,
-        branches.name as branch_name,
-        sales.sale
-    FROM
-        sales s
-    INNER JOIN staffs st 
-        ON sales.staff_id = staffs.id
-    INNER JOIN branches b
-        ON staffs.branch_id = branches.id
-EOM;
-
 $year = $_GET['year'];
 $branch = $_GET['branch'];
 $staff = $_GET['staff'];
 
+
+$sql = <<< EOM
+    SELECT
+        s.year,
+        s.month,
+        st.name as staff_name,
+        b.name as branch_name,
+        s.sale
+    FROM
+        sales s
+    INNER JOIN staffs st
+        ON s.staff_id = st.id
+    INNER JOIN branches b
+        ON st.branch_id = b.id
+EOM;
+
 $where_sql = '';
 
 if (isset($year)) {
-    $where_sql .= 'sales.year = :year';
+    $where_sql .= 's.year = :year';
 }
 
 if (isset($branch)) {
     if ($where_sql) {
         $where_sql .= ' AND ';
     }
-    $where_sql .= 'branches.id = :branch_id';
+    $where_sql .= 'b.id = :branch_id';
 }
 
 if (isset($staff)) {
     if ($where_sql) {
         $where_sql .= ' AND ';
     }
-    $where_sql .= 'staff.id = :staff_id';
+    $where_sql .= 'st.id = :staff_id';
 }
 
-if ($where_sql) {
+if (isset($where_sql)) {
     $where_sql = 'WHERE'.' '.$where_sql;
 }
 
@@ -58,6 +59,8 @@ $stmt->bindParam(':branch_id', $branch , PDO::PARAM_INT);
 $stmt->bindParam(':staff_id', $staff , PDO::PARAM_INT);
 $stmt->execute();
 $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
 
 $sql ='SELECT * FROM staffs';
 $stmt = $dbh->prepare($sql);
@@ -98,7 +101,7 @@ $sum += $sale['sale'];
         <div class="branch">
             <lablel>支店</lablel>
             <select name = "branch">
-                <option></option>
+                <option value=""></option>
                 <?foreach ($branches as $branch):?>
                 <option value = "<?= h($branch['id']) ?>"
                     <?php if ($_GET['branch'] == $branch['id']){echo "selected";}?>><?= h($branch['name']) ?>
@@ -110,7 +113,7 @@ $sum += $sale['sale'];
         <div class="staff">
             <lablel>従業員</lablel>
             <select name = "staff"> 
-                <option></option>
+                <option value=""></option>
                 <?foreach ($staffs as $staff):?>
                 <option value ="<?= h($staff['id']) ?>"
                     <?php if ($_GET['staff'] == $staff['id']){echo "selected";}?>><?= h($staff['name']) ?>
