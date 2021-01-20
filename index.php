@@ -23,40 +23,55 @@ $sql = <<< EOM
         ON s.staff_id = st.id
     INNER JOIN branches b
         ON st.branch_id = b.id
+
 EOM;
 
 $where_sql = '';
 
-if (isset($year)) {
+
+if ($year) {
     $where_sql .= 's.year = :year';
 }
 
-if (isset($branch)) {
+if ($branch) {
     if ($where_sql) {
         $where_sql .= ' AND ';
     }
     $where_sql .= 'b.id = :branch_id';
 }
 
-if (isset($staff)) {
+if ($staff) {
     if ($where_sql) {
         $where_sql .= ' AND ';
     }
     $where_sql .= 'st.id = :staff_id';
 }
 
-if (isset($where_sql)) {
-    $where_sql = 'WHERE'.' '.$where_sql;
+if ($where_sql) {
+    $where_sql = 'WHERE ' . $where_sql;
 }
 
-$sql .= ' '.$where_sql;
+$sql .= ' ' . $where_sql;
+
+
+$sql .= ' ORDER BY 
+            s.year ASC,
+            s.month ASC,
+            b.name ASC,
+            st.name ASC';
 
 echo $sql;
 
 $stmt = $dbh->prepare($sql);
-$stmt->bindParam(':year', $year , PDO::PARAM_INT);
-$stmt->bindParam(':branch_id', $branch , PDO::PARAM_INT);
-$stmt->bindParam(':staff_id', $staff , PDO::PARAM_INT);
+if ($year){
+    $stmt->bindParam(':year', $year , PDO::PARAM_INT);
+}
+if ($branch){
+    $stmt->bindParam(':branch_id', $branch , PDO::PARAM_INT);
+}
+if ($staff){
+    $stmt->bindParam(':staff_id', $staff , PDO::PARAM_INT);
+}
 $stmt->execute();
 $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -95,7 +110,7 @@ $sum += $sale['sale'];
     <div class="form">
         <div class="year">
             <lablel>年</lablel> 
-            <input type = "number" name = "year" value="<?php if (isset($_GET['year'])){echo $_GET['year'];} ?>"> 
+            <input type = "number" name = "year" value="<?php if ($year){echo $year;} ?>"> 
         </div>
 
         <div class="branch">
@@ -150,7 +165,7 @@ $sum += $sale['sale'];
     
 </table>
 
-<h1 class="cal">合計:<?= $sum ?></h1>
+<h1 class="cal">合計:<?= number_format($sum) ?>万円</h1>
 
 </body>
 </html>
