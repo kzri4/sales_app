@@ -59,15 +59,19 @@ $sql .= <<< EOM
 EOM;
 
 $stmt = $dbh->prepare($sql);
+
 if ($year) {
     $stmt->bindParam(':year', $year , PDO::PARAM_INT);
 }
+
 if ($branch) {
     $stmt->bindParam(':branch_id', $branch , PDO::PARAM_INT);
 }
+
 if ($staff) {
     $stmt->bindParam(':staff_id', $staff , PDO::PARAM_INT);
 }
+
 $stmt->execute();
 $sales = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -80,11 +84,6 @@ $sql ='SELECT * FROM branches';
 $stmt = $dbh->prepare($sql);
 $stmt->execute();
 $branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$sum = 0;
-foreach ($sales as $sale) {
-$sum += $sale['sale'];
-}
 
 ?>
 
