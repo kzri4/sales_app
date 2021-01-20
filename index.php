@@ -60,8 +60,6 @@ $sql .= ' ORDER BY
             b.name ASC,
             st.name ASC';
 
-echo $sql;
-
 $stmt = $dbh->prepare($sql);
 if ($year){
     $stmt->bindParam(':year', $year , PDO::PARAM_INT);
