@@ -110,11 +110,11 @@ $branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <lablel>支店</lablel>
             <select name = "branch">
                 <option value=""></option>
-                <?foreach ($branches as $branch):?>
+                <?php foreach ($branches as $branch):?>
                 <option value = "<?= h($branch['id']) ?>"
                     <?php if ($_GET['branch'] == $branch['id']){echo "selected";}?>><?= h($branch['name']) ?>
                 </option>
-                <?endforeach;?>
+                <?php endforeach;?>
             </select>
         </div>
 
@@ -122,11 +122,11 @@ $branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <lablel>従業員</lablel>
             <select name = "staff"> 
                 <option value=""></option>
-                <?foreach ($staffs as $staff):?>
+                <?php foreach ($staffs as $staff):?>
                 <option value ="<?= h($staff['id']) ?>"
                     <?php if ($_GET['staff'] == $staff['id']){echo "selected";}?>><?= h($staff['name']) ?>
                 </option>
-                <?endforeach;?>
+                <?php endforeach;?>
             </select><br>
         </div>
     </div>
@@ -146,7 +146,7 @@ $branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </tr>
 
     <?$sum = 0;?>
-    <?foreach ($sales as $sale):?>
+    <?php foreach ($sales as $sale):?>
     <tr>
         <td width="300"><?= h($sale['year']) ?></td>
         <td width="300"><?= h($sale['month']) ?></td>
@@ -154,8 +154,8 @@ $branches = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <td width="300"><?= h($sale['staff_name']) ?></td>
         <td width="300"><?= h($sale['sale']) ?></td>
     </tr>
-    <?$sum += $sale['sale']?>
-    <?endforeach;?>
+    <?php $sum += $sale['sale']?>
+    <?php endforeach;?>
 </table>
 
 <h1 class="cal">合計:<?= number_format($sum) ?>万円</h1>
